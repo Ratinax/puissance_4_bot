@@ -82,7 +82,9 @@ def efficient(grid, token = 'X', max_depth = 4, depth = 0, isMyTurn = True, x = 
 	for i in range(7):
 		results.append(efficient(grid, otherToken, max_depth, depth + 1, not isMyTurn, i))
 		# IF now my turn and result indicate that i loose, stop
+		# IF now op turn and result indicate that i win, stop
 	# IF now my turn and result indicate that i loose, stop just take that result and return -7**(max_depth - depth + 1)
+	# ELIF now op turn and result indicate that i win, stop just take that result and return 7**(max_depth - depth + 1)
 	#ELSE
 		# FOR result in results
 			# TODO res += result
