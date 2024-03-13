@@ -67,3 +67,17 @@ print(moove_wining(grid, 2))
 
 # def find_best_moove(grid, turn = 'X') -> int:
 # 	return
+
+# def efficient(grid, token = 'X', max_depth = 4, depth = 0, isMyTurn = True, x = 0):
+# 	if depth == max_depth:
+# 		return 0
+# 	# TODO play
+# 	# If win
+# 		# IF mon tour
+# 			# TODO return 7**(max_depth - depth)
+# 		# ELSE
+# 			# TODO return - 7**(max_depth - depth)
+# 	res = 0
+# 	for i in range(7):
+# 		res += efficient(grid, otherToken, max_depth, depth + 1, not isMyTurn, i)
+# 	return res
