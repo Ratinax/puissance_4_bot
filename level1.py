@@ -17,17 +17,20 @@ def opponent(token):
 	return 'X'
 
 def moove_wining(grid, x, y, token):
-	def wins_vertial(grid, x, y):
+	def wins_vertial(grid, token, x, y):
 		if y > 2:
 			return False
-		for i in range(0, 4):
+		for i in range(1, 4):
 			if grid[y + i][x] != token:
 				return False
 		return True
-	def wins_horizontal(grid, y):
+	def wins_horizontal(grid, token, y):
+		if grid[y][3] != token: return False
 		return 4 * token in ''.join(str(token) for token in grid[y])
-	def wins_diagonal(grid, x, y):
-		def getResultOfDiagonal(grid, x, y, xGrowing, yGrowing):
+	def wins_diagonal(grid, token, x, y):
+		def getResultOfDiagonal(grid, token, x, y, xGrowing, yGrowing):
+			if not token in grid[2]:
+				return False
 			yi = y
 			xi = x
 			diagonal = ""
@@ -44,19 +47,19 @@ def moove_wining(grid, x, y, token):
 				diagonal += str(grid[yi][xi])
 				yi += yGrowing
 				xi += xGrowing
-			if 4 * f'{grid[y][x]}' in diagonal:
+			if 4 * token in diagonal:
 				return True
 			return False
-		if getResultOfDiagonal(grid, x, y, +1, +1) : return True
-		if getResultOfDiagonal(grid, x, y, +1, -1) : return True
-		if getResultOfDiagonal(grid, x, y, -1, +1) : return True
-		if getResultOfDiagonal(grid, x, y, -1, -1) : return True
+		if getResultOfDiagonal(grid, token, x, y, +1, +1) : return True
+		if getResultOfDiagonal(grid, token, x, y, +1, -1) : return True
+		if getResultOfDiagonal(grid, token, x, y, -1, +1) : return True
+		if getResultOfDiagonal(grid, token, x, y, -1, -1) : return True
 
-	if wins_vertial(grid, x, y):
+	if wins_vertial(grid, token, x, y):
 		return True
-	if wins_horizontal(grid, y):
+	if wins_horizontal(grid, token, y):
 		return True
-	if wins_diagonal(grid, x, y):
+	if wins_diagonal(grid, token, x, y):
 		return True
 	return False
 
@@ -93,19 +96,11 @@ def efficient(grid, token = 'X', max_depth = 7, depth = 0, isMyTurn = True, x = 
 	res = 0
 	for i in range(7):
 		res += efficient(grid_copy, opponent(token), max_depth, depth + 1, not isMyTurn, i)
-	if depth == 0:
-		results[x] = res
-		pass
-	else:
-		return res
+
+	return res
 
 results = [0, 0, 0, 0, 0, 0, 0]
-threads = []
 for i in range(7):
-	thread = threading.Thread(target=efficient, args=(grid.copy(), 'O', 6, 0, True, i))
-	threads.append(thread)
-	thread.start()
-	# results.append(efficient(grid, token = 'O', x = i))
-for thread in threads:
-	thread.join()
-print(results)
+	results[i] = efficient(grid.copy(), 'O', 7, 0, True, i)
+
+print(results.index(max(results)))
