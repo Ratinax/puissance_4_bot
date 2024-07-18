@@ -28,7 +28,6 @@ def get_connections(grid, x, y):
 		tmp_x, tmp_y = slide(tmp_x, tmp_y, COMBINATIONS[i])
 		if (0 <= tmp_x < 7) and (0 <= tmp_y < 6):
 			token = grid[tmp_y][tmp_x]
-
 		while (0 <= tmp_x < 7) and (0 <= tmp_y < 6) and grid[tmp_y][tmp_x] != 0 and grid[tmp_y][tmp_x] == token:
 			res <<= 1
 			tmp_x, tmp_y = slide(tmp_x, tmp_y, COMBINATIONS[i])

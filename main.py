@@ -18,12 +18,20 @@ def invert_level(level):
 	return level2
 
 # Player starting
-level = level1
+level = level2
 
 is_a_winner = False
 token = 'X'
+is_player_turn = True
+player_game = False
+
 while not is_full(grid):
-	x = level.get_move(grid, token)
+	if player_game and is_player_turn:
+		x = int(input('Enter a column number to play: '))
+		while not can_play_here(grid, x):
+			x = int(input('Enter a valid column number to play: '))
+	else:
+		x = level.get_move(grid, token)
 	y = play(grid, token, x)
 	print(f'{token} plays {x}, {y}')
 	if moove_wining(grid, x, y, token):
@@ -31,7 +39,10 @@ while not is_full(grid):
 		print(f'{token} won ! in {x}')
 		is_a_winner = True
 		break
-	level = invert_level(level)
+	if not player_game:
+		level = invert_level(level)
+	else:
+		is_player_turn = not is_player_turn
 	token = opponent(token)
 	put_grid(grid)
 

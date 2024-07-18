@@ -36,6 +36,27 @@ def put_grid(grid):
 		print()
 	print()
 
+COMBINATIONS = {
+	1: (0, 1),
+	2: (0, -1),
+	4: (1, 0),
+	8: (-1, 0),
+	16: (-1, 1),
+	32: (1, -1),
+	64: (1, 1),
+	128: (-1, -1),
+}
+
+def slide(x, y, vector):
+	x += vector[0]
+	y += vector[1]
+	return x, y
+
+def slide_invert(x, y, vector):
+	x -= vector[0]
+	y -= vector[1]
+	return x, y
+
 def moove_wining(grid, x, y, token):
 	def wins_vertial(grid, token, x, y):
 		if y > 2:
@@ -43,38 +64,28 @@ def moove_wining(grid, x, y, token):
 		for i in range(1, 4):
 			if grid[y + i][x] != token:
 				return False
-		# print('here')
 		return True
 	def wins_horizontal(grid, token, y):
 		if grid[y][3] != token: return False
 		return 4 * token in ''.join(str(token) for token in grid[y])
 	def wins_diagonal(grid, token, x, y):
-		def getResultOfDiagonal(grid, token, x, y, xGrowing, yGrowing):
-			if not token in grid[2]:
-				return False
-			yi = y
-			xi = x
-			diagonal = ""
-			yLimit = 5 * (yGrowing != -1)
-			xLimit = 6 * (xGrowing != -1)
-			while yi != yLimit and xi != xLimit:
-				yi += yGrowing
-				xi += xGrowing
-			yGrowing = -yGrowing
-			xGrowing = -xGrowing
-			yLimit = 5 * (yGrowing != -1)
-			xLimit = 6 * (xGrowing != -1)
-			while yi != yLimit and xi != xLimit:
-				diagonal += str(grid[yi][xi])
-				yi += yGrowing
-				xi += xGrowing
-			if 4 * token in diagonal:
+		i = 1
+		for _ in range(8):
+			res = 0
+
+			tmp_x, tmp_y = slide_invert(x, y, COMBINATIONS[i])
+			while (0 <= tmp_x < 7) and (0 <= tmp_y < 6) and grid[tmp_y][tmp_x] == token:
+				tmp_x, tmp_y = slide_invert(tmp_x, tmp_y, COMBINATIONS[i])
+
+			tmp_x, tmp_y = slide(tmp_x, tmp_y, COMBINATIONS[i])
+			while (0 <= tmp_x < 7) and (0 <= tmp_y < 6) and grid[tmp_y][tmp_x] == token:
+				res += 1
+				tmp_x, tmp_y = slide(tmp_x, tmp_y, COMBINATIONS[i])
+
+			if res >= 4:
 				return True
-			return False
-		if getResultOfDiagonal(grid, token, x, y, +1, +1) : return True
-		if getResultOfDiagonal(grid, token, x, y, +1, -1) : return True
-		if getResultOfDiagonal(grid, token, x, y, -1, +1) : return True
-		if getResultOfDiagonal(grid, token, x, y, -1, -1) : return True
+			i <<= 1
+		return False
 
 	if wins_vertial(grid, token, x, y):
 		return True

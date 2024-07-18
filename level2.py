@@ -28,7 +28,7 @@ def efficient(grid, token = 'X', max_depth = 7, depth = 0, isMyTurn = True, x = 
 def get_move(grid, token):
 	results = [0, 0, 0, 0, 0, 0, 0]
 	for i in range(7):
-		results[i] = efficient(grid.copy(), token, 4, 0, True, i)
+		results[i] = efficient(grid.copy(), token, 5, 0, True, i)
 	for i in range(7):
 		if not can_play_here(grid, i):
 			results[i] = -inf
