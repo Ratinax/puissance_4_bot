@@ -1,106 +1,77 @@
-import threading
-import io
-grid = [
-	[0, 0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 0, 0, 0],
-		]
-# Turns are either 'X' or 'O'
-# pos is between 0 and 6
+from basic_functions import *
+import level0
+import random
 
-def opponent(token):
-	if token == 'X':
-		return 'O'
-	return 'X'
+COMBINATIONS = {
+	1: (0, 1),
+	2: (0, -1),
+	4: (1, 0),
+	8: (-1, 0),
+	16: (-1, 1),
+	32: (1, -1),
+	64: (1, 1),
+	128: (-1, -1),
+}
 
-def moove_wining(grid, x, y, token):
-	def wins_vertial(grid, token, x, y):
-		if y > 2:
-			return False
-		for i in range(1, 4):
-			if grid[y + i][x] != token:
-				return False
-		return True
-	def wins_horizontal(grid, token, y):
-		if grid[y][3] != token: return False
-		return 4 * token in ''.join(str(token) for token in grid[y])
-	def wins_diagonal(grid, token, x, y):
-		def getResultOfDiagonal(grid, token, x, y, xGrowing, yGrowing):
-			if not token in grid[2]:
-				return False
-			yi = y
-			xi = x
-			diagonal = ""
-			yLimit = 5 * (yGrowing != -1)
-			xLimit = 6 * (xGrowing != -1)
-			while yi != yLimit and xi != xLimit:
-				yi += yGrowing
-				xi += xGrowing
-			yGrowing = -yGrowing
-			xGrowing = -xGrowing
-			yLimit = 5 * (yGrowing != -1)
-			xLimit = 6 * (xGrowing != -1)
-			while yi != yLimit and xi != xLimit:
-				diagonal += str(grid[yi][xi])
-				yi += yGrowing
-				xi += xGrowing
-			if 4 * token in diagonal:
-				return True
-			return False
-		if getResultOfDiagonal(grid, token, x, y, +1, +1) : return True
-		if getResultOfDiagonal(grid, token, x, y, +1, -1) : return True
-		if getResultOfDiagonal(grid, token, x, y, -1, +1) : return True
-		if getResultOfDiagonal(grid, token, x, y, -1, -1) : return True
+def slide(x, y, vector):
+	x += vector[0]
+	y += vector[1]
+	return x, y
 
-	if wins_vertial(grid, token, x, y):
-		return True
-	if wins_horizontal(grid, token, y):
-		return True
-	if wins_diagonal(grid, token, x, y):
-		return True
-	return False
+def get_connections(grid, x, y):
+	connections = 0
+	i = 1
+	for _ in range(8):
+		res = 1
+		tmp_x = x
+		tmp_y = y
+		tmp_x, tmp_y = slide(tmp_x, tmp_y, COMBINATIONS[i])
+		if (0 <= tmp_x < 7) and (0 <= tmp_y < 6):
+			token = grid[tmp_y][tmp_x]
 
-def can_play_here(grid, x):
-	return grid[0][x] == 0
+		while (0 <= tmp_x < 7) and (0 <= tmp_y < 6) and grid[tmp_y][tmp_x] != 0 and grid[tmp_y][tmp_x] == token:
+			res <<= 1
+			tmp_x, tmp_y = slide(tmp_x, tmp_y, COMBINATIONS[i])
+		connections += res
+		i <<= 1
+	return connections
 
-def play(grid, token, x):
-	i = 0
-	while i < len(grid) and grid[i][x] == 0:
-		i += 1
-	i -= 1
-	grid[i][x] = token
-	return i
-
-def copy_gird(grid):
-	grid2 = []
-	for line in grid:
-		grid2.append(line.copy())
-	return grid2
-
-def efficient(grid, token = 'X', max_depth = 7, depth = 0, isMyTurn = True, x = 0):
-	if depth == max_depth:
-		return 0
-	if not can_play_here(grid, x):
-		return 0
-
-	grid_copy = copy_gird(grid)
-	y = play(grid_copy, token, x)
-	if moove_wining(grid_copy, x, y, token):
-		if isMyTurn:
-			return 7**(max_depth - depth)
-		else:
-			return -7**(max_depth - depth)
-	res = 0
+def find_most_connecting(grid, token):
+	max_connections = []
+	res = []
 	for i in range(7):
-		res += efficient(grid_copy, opponent(token), max_depth, depth + 1, not isMyTurn, i)
+		if not can_play_here(grid, i):
+			continue
+		grid_tmp = copy_gird(grid)
+		y = play(grid_tmp, token, i)
+		connections = get_connections(grid, i, y)
+		if len(max_connections) == 0 or connections == max(max_connections):
+			max_connections.append(connections)
+			res.append(i)
+		elif connections > max(max_connections):
+			max_connections = [connections]
+			res = [i]
+	# print(res)
+	return random.choice(res)
 
-	return res
 
-results = [0, 0, 0, 0, 0, 0, 0]
-for i in range(7):
-	results[i] = efficient(grid.copy(), 'O', 7, 0, True, i)
+def get_move(grid, token):
+	# Win if i can
+	for i in range(7):
+		if not can_play_here(grid, i):
+			continue
+		grid_tmp = copy_gird(grid)
+		y = play(grid_tmp, token, i)
+		if moove_wining(grid_tmp, i, y, token):
+			return i
 
-print(results.index(max(results)))
+	# Avoid opponent from winning
+	token = opponent(token)
+	for i in range(7):
+		if not can_play_here(grid, i):
+			continue
+		grid_tmp = copy_gird(grid)
+		y = play(grid_tmp, token, i)
+		if moove_wining(grid_tmp, i, y, token):
+			return i
+	return find_most_connecting(grid, token)
